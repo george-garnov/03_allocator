@@ -3,15 +3,15 @@
 #endif
 
 #include <iostream>
-#include <vector>
 #include <deque>
 #include <map>
 
 // #define USE_PRETTY 1
 
-template<typename T>
+#define CONTAINER_SIZE 10
+
+template<typename T, size_t N>
 struct map_allocator {
-    static const std::size_t N = 10;
     
     using value_type = T;
 
@@ -22,17 +22,17 @@ struct map_allocator {
 
     template<typename U>
     struct rebind {
-        using other = map_allocator<U>;
+        using other = map_allocator<U, N>;
     };
 
-    map_allocator():ptr(N)
+    map_allocator():memptr(N)
     {
-      for(auto i=0; i<N; i++) ptr[i] = memory+i;
+      for(auto i=0; i<N; i++) memptr[i] = memory+i;
     }
     ~map_allocator() = default;
 
     template<typename U> 
-    map_allocator(const map_allocator<U>&) {
+    map_allocator(const map_allocator<U, N>&) {
       
     }
 
@@ -42,9 +42,12 @@ struct map_allocator {
 #else
         std::cout << __PRETTY_FUNCTION__ << "[n = " << n << "]" << std::endl;
 #endif
-        auto p = std::malloc(n * sizeof(T));
-        if (!p)
-            throw std::bad_alloc();
+        if (memptr.size() == 0) throw std::bad_alloc();
+        auto p = memptr.back();
+        
+        std::cout << "memptr: " << p-memory << std::endl;
+        
+        memptr.pop_back();
         return reinterpret_cast<T *>(p);
     }
 
@@ -54,7 +57,8 @@ struct map_allocator {
 #else
         std::cout << __PRETTY_FUNCTION__ << "[n = " << n << "]" << std::endl;
 #endif
-        std::free(p);
+        std::cout << "memptr: " << p-memory << std::endl;
+        memptr.push_back(p);
     }
 
     template<typename U, typename ...Args>
@@ -78,17 +82,23 @@ struct map_allocator {
     
 private:
   T memory[N];
-  std::deque<T*> ptr;//(std::size_t n = N);
+  std::deque<T*> memptr;
 };
 
-int main(int, char *[]) {
+constexpr int fact(int n)
+{
+  return ((n==0) ? 1 : n*fact(n-1));
+}
 
-    auto m = std::map<int, int, std::less<int>, map_allocator<std::pair<const int, int>>>{};
-    for (int i = 0; i < 5; ++i) {
-      m[i] = i;
-      std::cout << m.size() << " : " << sizeof(m) << std::endl;
+
+int main(int, char *[])
+{
+    auto m = std::map<int, int, std::less<int>, map_allocator<std::pair<const int, int>, CONTAINER_SIZE>>{};
+    for (int i = 0; i < CONTAINER_SIZE; i++)
+    {
+      m[i] = fact(i);
+      std::cout << "Key: " << i << "; Value: " << m[i] << std::endl;
     }
-    
 
     return 0;
 }
