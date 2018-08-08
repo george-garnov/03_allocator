@@ -13,7 +13,7 @@ class Stack{
 public:
    Stack() {cnt=0;}
    ~Stack() = default;
-   void push(T val){if(cnt<10) mem[cnt++] = val;}
+   void push(T val){if(cnt<N) mem[cnt++] = val;}
    T pop(){return cnt ? mem[--cnt] : 0;}
 };
 
