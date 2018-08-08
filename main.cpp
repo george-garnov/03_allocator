@@ -1,18 +1,24 @@
-#ifndef __PRETTY_FUNCTION__
-///#include "pretty.h"
-#endif
-
 #include <iostream>
-#include <deque>
 #include <map>
 
-// #define USE_PRETTY 1
+
+// #define OUTPUT_TO_CONSOLE 1
 
 #define CONTAINER_SIZE 10
 
+template <typename T, size_t N>
+class Stack{
+    size_t cnt;
+    T mem[N];
+public:
+   Stack() {cnt=0;}
+   ~Stack() = default;
+   void push(T val){if(cnt<10) mem[cnt++] = val;}
+   T pop(){return cnt ? mem[--cnt] : 0;}
+};
+
 template<typename T, size_t N>
 struct map_allocator {
-    
     using value_type = T;
 
     using pointer = T*;
@@ -25,64 +31,55 @@ struct map_allocator {
         using other = map_allocator<U, N>;
     };
 
-    map_allocator():memptr(N)
+    map_allocator()
     {
-      for(auto i=0; i<N; i++) memptr[i] = memory+i;
+       for(auto i=0;i<N;i++) ptr.push(memory+i);
     }
     ~map_allocator() = default;
 
     template<typename U> 
     map_allocator(const map_allocator<U, N>&) {
-      
+
     }
 
     T *allocate(std::size_t n) {
-#ifndef USE_PRETTY
+        auto p = ptr.pop();
+        if (!p) throw std::bad_alloc();
+        
+#ifdef OUTPUT_TO_CONSOLE
         std::cout << "allocate: [n = " << n << "]" << std::endl;
-#else
-        std::cout << __PRETTY_FUNCTION__ << "[n = " << n << "]" << std::endl;
-#endif
-        if (memptr.size() == 0) throw std::bad_alloc();
-        auto p = memptr.back();
-        
         std::cout << "memptr: " << p-memory << std::endl;
+#endif      
         
-        memptr.pop_back();
         return reinterpret_cast<T *>(p);
     }
 
     void deallocate(T *p, std::size_t n) {
-#ifndef USE_PRETTY
+#ifdef OUTPUT_TO_CONSOLE
         std::cout << "deallocate: [n  = " << n << "] " << std::endl;
-#else
-        std::cout << __PRETTY_FUNCTION__ << "[n = " << n << "]" << std::endl;
-#endif
         std::cout << "memptr: " << p-memory << std::endl;
-        memptr.push_back(p);
+#endif
+        ptr.push(p);
     }
 
     template<typename U, typename ...Args>
     void construct(U *p, Args &&...args) {
-#ifndef USE_PRETTY
+#ifdef OUTPUT_TO_CONSOLE
         std::cout << "construct" << std::endl;
-#else
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
         new(p) U(std::forward<Args>(args)...);
     };
 
     void destroy(T *p) {
-#ifndef USE_PRETTY
+#ifdef OUTPUT_TO_CONSOLE
         std::cout << "destroy" << std::endl;
-#else
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
 #endif
         p->~T();
     }
     
 private:
   T memory[N];
-  std::deque<T*> memptr;
+  Stack<T*,N> ptr;
 };
 
 constexpr int fact(int n)
@@ -93,11 +90,17 @@ constexpr int fact(int n)
 
 int main(int, char *[])
 {
-    auto m = std::map<int, int, std::less<int>, map_allocator<std::pair<const int, int>, CONTAINER_SIZE>>{};
+    auto m1 = std::map<int, int>{};
+    for (int i = 0; i < 10; i++)
+    {
+      m1[i] = fact(i);
+    }
+    
+    auto m2 = std::map<int, int, std::less<int>, map_allocator<std::pair<const int, int>, CONTAINER_SIZE>>{};
     for (int i = 0; i < CONTAINER_SIZE; i++)
     {
-      m[i] = fact(i);
-      std::cout << "Key: " << i << "; Value: " << m[i] << std::endl;
+      m2[i] = fact(i);
+      std::cout << "Key: " << i << "; Value: " << m2[i] << std::endl;
     }
 
     return 0;
