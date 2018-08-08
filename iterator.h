@@ -6,10 +6,8 @@
 template<typename ValueType>
 class Iterator: public std::iterator<std::input_iterator_tag, ValueType>
 {
-    friend class Container;
-private:
-    Iterator(ValueType* p);
 public:
+    Iterator(ValueType* p);
     Iterator(const Iterator &it);
 
     bool operator!=(Iterator const& other) const;
