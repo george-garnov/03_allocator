@@ -1,6 +1,6 @@
 #include <iostream>
 #include <map>
-
+#include "allocator.h"
 
 // #define OUTPUT_TO_CONSOLE 1
 
@@ -19,7 +19,7 @@ int main(int, char *[])
       m1[i] = fact(i);
     }
     
-    auto m2 = std::map<int, int, std::less<int>, map_allocator<std::pair<const int, int>, CONTAINER_SIZE>>{};
+    auto m2 = std::map<int, int, std::less<int>, allocator<std::pair<const int, int>, CONTAINER_SIZE>>{};
     for (int i = 0; i < CONTAINER_SIZE; i++)
     {
       m2[i] = fact(i);
