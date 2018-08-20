@@ -1,55 +1,90 @@
-#ifndef __CONTAINER_H__
-#define __CONTAINER_H__
+#pragma once
 
-#include "iterator.h"
-#include <memory>
+template<typename T>
+struct ContainerCell {
+  ContainerCell() = default;
+  explicit ContainerCell(const T &val) : data{val}, next{nullptr} {}
 
-template<typename T, class Alloc = std::allocator<T>>
-class Container
-{
-public:
-    typedef T& reference; 
-    typedef const T& const_reference;
-    typedef Iterator<T> iterator;
-    typedef Iterator<const T> const_iterator;
-
-    Container() = default;
-    ~Container() = default;
-    
-    reference operator[] (size_t n)
-    {
-        return data[n];
-    }
-    
-    const_reference operator[] (size_t n) const
-    {
-        return data[n];
-    }
-    
-
-    iterator begin()
-    {
-        return iterator(data);
-    }
-    
-    iterator end()
-    {
-        return iterator(data + size);
-    }
-
-    const_iterator begin() const
-    {
-        return const_iterator(data);
-    }
-    
-    const_iterator end() const
-    {
-        return const_iterator(data + size);
-    }
-    
-private:
-    const size_t size;
-    T data[10];
+  T data;
+  ContainerCell *next;
 };
 
-#endif // __CONTAINER_H__
+template<typename T, typename Alloc = std::allocator<T> >
+class container {
+  using cell_t = ContainerCell<T>;
+
+  using alloc_t = typename Alloc::template rebind<cell_t>::other;
+  alloc_t alloc;
+  
+  cell_t *first = nullptr;
+  cell_t *last  = nullptr;  
+    
+public:
+
+  struct iterator : std::iterator<std::forward_iterator_tag, T>
+  {
+    explicit iterator(cell_t *cell = nullptr) : ptr(cell) {}
+    iterator() = delete;
+
+    iterator &operator++()
+    {
+      if (ptr != nullptr)
+      {
+        ptr = ptr->next;
+      }
+      return *this;
+    }
+
+    T &operator*()
+    {
+      return ptr->data;
+    }
+
+    bool operator==(iterator &other)
+    {
+      return ptr == other.ptr;
+    }
+
+    bool operator!=(iterator &other)
+    {
+      return !(*this == other);
+    }
+
+  private:
+    cell_t *ptr;
+  };
+    
+  container() = default;
+
+  ~container()
+  {
+    for(auto i=first;i;)
+    {
+      auto p = i;
+      i = i->next;
+      alloc.destroy(p);
+      alloc.deallocate(p, 1);
+    }
+  }
+
+  void push_back(const T &value)
+  {
+    cell_t *p = alloc.allocate(1);
+    alloc.construct(p, value);
+
+    if (last)
+    {
+      last->next = p;
+    }
+    else
+    {
+      first = p;
+    }
+    last = p;
+  }
+
+  iterator begin() {return iterator(first);}
+
+  iterator end()   {return iterator(nullptr);}
+
+};
