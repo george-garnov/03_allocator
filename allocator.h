@@ -1,5 +1,4 @@
-#ifndef __ALLOCATOR_H__
-#define __ALLOCATOR_H__
+#pragma once
 
 template <typename T, size_t N>
 class Stack{
@@ -76,5 +75,3 @@ private:
   T memory[N];
   Stack<T*,N> ptr;
 };
-
-#endif // __ALLOCATOR_H__
