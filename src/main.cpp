@@ -1,7 +1,7 @@
 #include <iostream>
 #include <map>
-#include "allocator.h"
-#include "container.h"
+#include "../inc/allocator.h"
+#include "../inc/container.h"
 
 // #define OUTPUT_TO_CONSOLE 1
 
