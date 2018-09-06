@@ -1,0 +1,7 @@
+#include "version.h"
+#include "version_0.h"
+
+int version()
+{
+  return PROJECT_VERSION_PATCH;
+}
