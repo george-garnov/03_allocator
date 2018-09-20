@@ -35,6 +35,12 @@ struct allocator {
     allocator(const allocator<U, N>&) {
 
     }
+    
+    // Конструктор копирования
+    allocator(const allocator<T,N> &)
+    {      
+      for(auto i=0;i<N;i++) ptr.push(memory+i);
+    }
 
     T *allocate(std::size_t n) {
         auto p = ptr.pop();
