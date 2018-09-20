@@ -62,7 +62,7 @@ struct allocator {
         std::cout << "construct" << std::endl;
 #endif
         new(p) U(std::forward<Args>(args)...);
-    };
+    }
 
     void destroy(T *p) {
 #ifdef OUTPUT_TO_CONSOLE
